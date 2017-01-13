@@ -2,6 +2,11 @@
 #     resource: "@BackendBundle/Resources/config/routing.yml"
 #     prefix:   /
 
+# app:
+#     resource: "@AppBundle/Controller/"
+#     type:     annotation
+
+#Automaticamente va a cargar nuestro archivo que configuracmos para las routes
 app:
-    resource: "@AppBundle/Controller/"
-    type:     annotation
+  resource: "@AppBundle/Resources/config/routing.yml"
+  prefix: /
