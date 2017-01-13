@@ -18,4 +18,20 @@ class DefaultController extends Controller
             'base_dir' => realpath($this->getParameter('kernel.root_dir').'/..'),
         ]);
     }
+
+
+    /**
+     * @Route("/pruebas", name="pruebas")
+     */
+    public function pruebasAction(Request $request)
+    {   
+        //Cremos un entity manager para poder trabajar con entidades
+        $em = $this->getDoctrine()->getManager();
+        //Sacamos todos los registros de la entidad usuarios
+        $user = $em->getRepository('BackendBundle:User')->findAll();
+
+        var_dump($user);
+
+        die();
+    }
 }
