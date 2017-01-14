@@ -20,13 +20,19 @@ class DefaultController extends Controller
 
     public function pruebasAction(Request $request)
     {   
+        //Creamos nuestra varialble helpers para poder utulizar el méotodo json
+        $helpers = $this->get("app.helpers");
+
         //Cremos un entity manager para poder trabajar con entidades
         $em = $this->getDoctrine()->getManager();
         //Sacamos todos los registros de la entidad usuarios
         $user = $em->getRepository('BackendBundle:User')->findAll();
 
-        var_dump($user);
 
-        die();
+        return $helpers->json($user);
+
+        
     }
+
+
 }
