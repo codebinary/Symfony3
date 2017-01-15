@@ -22,6 +22,9 @@ class DefaultController extends Controller
     public function loginAction(Request $request){
         $helpers = $this->get("app.helpers");
 
+        //Llamamos al servicio de validación
+        $jwt_auth = $this->get("app.jwt_auth");
+
         //Vamos a recibir un json por post
         $json = $request->get("json", null);
 
@@ -42,7 +45,11 @@ class DefaultController extends Controller
 
             //Si hay datos de error en $validate_email entonces es invalido
             if (count($validate_email) == 0 && $password != null) {
-                echo "Data Success !!";
+
+                $signup = $jwt_auth->signup($email, $password);
+
+                return $helpers->json($signup);
+
             }else{
                 echo "Data incorrent !!";
             }
