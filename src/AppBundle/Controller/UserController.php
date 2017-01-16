@@ -54,7 +54,10 @@ class UserController extends Controller{
 				$user->setEmail($email);
 				$user->setName($name);
 				$user->setSurname($surname);
-				$user->setPassword($password);
+
+				//Cifrar password
+				$pwd = hash('sha256', $password);
+				$user->setPassword($pwd);
 
 				$em = $this->getDoctrine()->getManager();
 
@@ -71,6 +74,7 @@ class UserController extends Controller{
 					$em->flush();
 
 					$data["status"] = 'success';
+					$data["code"] = 200;
 					$data["msg"]	= 'New User created!!';
 				}else{
 					$data = array(

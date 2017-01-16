@@ -47,13 +47,16 @@ class DefaultController extends Controller
             //Validamos los parámetros
             $validate_email = $this->get("validator")->validate($email, $emailContraint);
 
+            //Ciframos la contraseña
+            $pwd = hash('sha256', $password);
+
             //Si hay datos de error en $validate_email entonces es invalido
             if (count($validate_email) == 0 && $password != null) {
 
                 if ($gethash == null) {
-                    $signup = $jwt_auth->signup($email, $password);
+                    $signup = $jwt_auth->signup($email, $pwd);
                 }else{
-                    $signup = $jwt_auth->signup($email, $password, "hash");
+                    $signup = $jwt_auth->signup($email, $pwd, "hash");
                 }
 
                 return new JsonResponse($signup);
