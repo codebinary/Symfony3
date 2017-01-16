@@ -200,4 +200,68 @@ class UserController extends Controller{
 	return $helpers->json($data);
 	}
 
+
+	public function uploadImageAction(Request $request){
+
+		$helpers = $this->get("app.helpers");
+
+		$hash = $request->get("authorization", null);
+		$authCheck = $helpers->authCheck($hash);
+
+		if ($authCheck == true) {
+			//Decodificamos el token
+			$identity = $helpers->authCheck($hash, true);
+
+			$em = $this->getDoctrine()->getManager();
+			$user = $em->getRepository("BackendBundle:User")->findOneBy(array(
+					"id" => $identity->sub
+				));
+
+			//Obtenemos el fichero que llego por post 
+			$file = $request->files->get("image");
+
+			if (!empty($file) && $file != null) {
+				$ext = $file->guessExtension(); //Obtenemos la extensión del archivo
+
+				//Comprobamos que el fichero sea una imagen
+				if ($ext == "jpg" || $ext == "jpeg" || $ext == "png" || $ext == "gif") {
+					$file_name = time().".".$ext;
+					$file->move("uploads/users", $file_name);
+
+					$user->setImage($file_name);
+					$em->persist($user);
+					$em->flush();
+
+					$data = array(
+						"status" => "success",
+						"code"	 => 200,
+						"msg"	 => "Image for user uploaded success !!"
+					);
+				}else{
+					$data = array(
+						"status" => "error",
+						"code"	 => 200,
+						"msg"	 => "File not valid!!"
+					);
+				}
+			}else{
+				$data = array(
+					"status" => "error",
+					"code"	 => 400,
+					"msg"	 => "Image not uploaded"
+				);
+			}
+
+		}else{
+			$data = array(
+				"status" => "error",
+				"code"	 => 400,
+				"msg"	 => "Authorization not valid"
+			);
+		}
+
+		return $helpers->json($data);
+
+	}
+
 }
