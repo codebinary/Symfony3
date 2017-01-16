@@ -7,16 +7,18 @@ use Firebase\JWT\JWT;
 class JwtAuth{
 
 	public $manager;
+	public $key;
 
 	public function __construct($manager){
 		$this->manager = $manager;
+		$this->key = "clave-secreta";
 	}
 
-	//Método para la validación
+	//Método para la validación de login
 	public function signup($email, $password, $getHash = NULL){
 
 		//Clave secrete
-		$key = "clave-secreta";
+		$key = $this->key;
 
 		//Consulta para comprobar los datos
 		//Esto es como decir SELECT * FROM USER WHERE EMAIL = $EMAIL AND PASSWORD = $PASSWORD
@@ -63,6 +65,44 @@ class JwtAuth{
 		}else{
 			return array("status" => "error", "data" => "Login failed !!");
 		}
+	}
+
+
+	//Método que recibe el token y lo validará
+	public function checkToken($jwt, $getIdentity = false){
+
+		$key = $this->key; 
+		$auth = false;
+
+		try{
+
+			$decoded = JWT::decode($jwt, $key, array('HS256'));
+
+		}catch(\UnexpectedValueException $e){
+
+			$auth = false;
+
+		}catch(\DomainException $e){
+
+			$auth = false;
+
+		}
+
+		//Si existe la propiedad entonces el token es correcto
+		//(Sub es el id del usuario) pero puede ser cualquier datos del user
+		if (isset($decoded->sub)) {
+			$auth = true;
+		}else{
+			$auth = false;
+		}
+
+		if ($getIdentity == true) {
+			return $decoded;
+		}else{
+			return $auth;
+		}
+
+
 	}
 
 

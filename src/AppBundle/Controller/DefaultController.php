@@ -22,17 +22,18 @@ class DefaultController extends Controller
     }
 
     public function loginAction(Request $request){
+        //Servicio de respuesta en Json
         $helpers = $this->get("app.helpers");
-
         //Llamamos al servicio de validación
         $jwt_auth = $this->get("app.jwt_auth");
+
 
         //Vamos a recibir un json por post
         $json = $request->get("json", null);
 
         if ($json != null) {
             //Recogemos los parámetros y decodificamos
-            $params = json_decode($json);
+            $params = json_decode($json);   
 
             //Obtenemos los valores email y password
             $email = (isset($params->email) ? $params->email : null);
@@ -80,13 +81,19 @@ class DefaultController extends Controller
 
     public function pruebasAction(Request $request)
     {   
-        //Creamos nuestra varialble helpers para poder utulizar el méotodo json
+        //Servicio de respuesta en Json
         $helpers = $this->get("app.helpers");
+        //Llamamos al servicio de validación
 
+        $hash = $request->get("authorization", null);
+        $check = $helpers->authCheck($hash, true);
+
+        var_dump($check);
+        die();
         //Cremos un entity manager para poder trabajar con entidades
-        $em = $this->getDoctrine()->getManager();
+        /*$em = $this->getDoctrine()->getManager();
         //Sacamos todos los registros de la entidad usuarios
-        $user = $em->getRepository('BackendBundle:User')->findAll();
+        $user = $em->getRepository('BackendBundle:User')->findAll();*/
 
 
         return $helpers->json($user);
