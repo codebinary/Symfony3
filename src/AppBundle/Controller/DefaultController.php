@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 class DefaultController extends Controller
 {
     
@@ -35,6 +37,7 @@ class DefaultController extends Controller
             //Obtenemos los valores email y password
             $email = (isset($params->email) ? $params->email : null);
             $password = (isset($params->password) ? $params->password : null);
+            $gethash = (isset($params->gethash) ? $params->gethash : null);
 
             //Restricción de email
             $emailContraint = new Assert\Email();
@@ -46,18 +49,31 @@ class DefaultController extends Controller
             //Si hay datos de error en $validate_email entonces es invalido
             if (count($validate_email) == 0 && $password != null) {
 
-                $signup = $jwt_auth->signup($email, $password);
+                if ($gethash == null) {
+                    $signup = $jwt_auth->signup($email, $password);
+                }else{
+                    $signup = $jwt_auth->signup($email, $password, "hash");
+                }
 
-                return $helpers->json($signup);
+                return new JsonResponse($signup);
 
             }else{
-                echo "Data incorrent !!";
+                return $helpers->json(
+                            array(
+                                "status"    => "error",
+                                "data"      => "Login not valid !"
+                            )
+                        );
             }
 
 
         }else{
-            echo "No hay datos";
-            die();
+            return $helpers->json(
+                    array(
+                            "status"    => "error",
+                            "data"      => "Login not valid!!"
+                        )
+                    );
         }
     }
 
