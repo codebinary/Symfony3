@@ -16,7 +16,6 @@ class VideoController extends Controller{
 	 * Método para crear video
 	 *
 	 */
-	
 	public function newAction(Request $request){
 		
 		$helpers = $this->get("app.helpers");
@@ -120,7 +119,6 @@ class VideoController extends Controller{
 	 * Método para editar video
 	 *
 	 */
-	
 	public function editAction(Request $request, $id = null){
 		
 		$helpers = $this->get("app.helpers");
@@ -218,6 +216,11 @@ class VideoController extends Controller{
 
 	}
 
+	/**
+	 *
+	 * Método para subir video e imagen
+	 *
+	 */
 	 public function uploadAction(Request $request, $id) {
 		$helpers = $this->get("app.helpers");
 
@@ -310,7 +313,11 @@ class VideoController extends Controller{
 		return $helpers->json($data);
 	}
 
-
+	/**
+	 *
+	 * Método para listar todos los videos
+	 *
+	 */
 	public function videosAction(Request $request){
 
 		$helpers = $this->get("app.helpers");
@@ -339,5 +346,103 @@ class VideoController extends Controller{
 
 		return $helpers->json($data);
 	}
+
+
+	/**
+	 *
+	 * Método para recuperar los 5 últimos videos
+	 *
+	 */
+	public function lastsVideosAction(Request $request){
+
+		$helpers = $this->get("app.helpers");
+		$em = $this->getDoctrine()->getManager();
+
+		$dql = "SELECT v FROM BackendBundle:Video v ORDER BY v.createdAt DESC";
+		$query = $em->createQuery($dql)->setMaxResults(5);
+		$videos = $query->getResult();
+
+		$data = array(
+			"status" => "success",
+			"data" => $videos
+		);
+
+		return $helpers->json($data);
+
+	}
+
+	/**
+	 *
+	 * Método que obtiene un video en particular
+	 *
+	 */
+	public function videoAction(Request $request, $id = null){
+
+		$helpers = $this->get("app.helpers");
+
+		$em = $this->getDoctrine()->getManager();
+
+		$video = $em->getRepository("BackendBundle:Video")->findOneBy(array(
+			"id" => $id
+		));
+
+	
+
+		if ($video) {
+			$data = array();
+
+			$data["status"]	 = "success";
+			$data["code"]	 = 200;
+			$data["data"]	 = $video;
+		}else{
+			$data = array(
+				"status" => "error",
+				"code" => 400,
+				"msg" => "Video dont exists"
+			);
+		}
+
+		return $helpers->json($data);
+
+	}
+
+
+	/**
+	 *
+	 * Método para buscar un video
+	 *
+	 */
+	public function searchAction(Request $request, $search = null){
+
+		$helpers = $this->get("app.helpers");
+
+		$em = $this->getDoctrine()->getManager();
+		if($search != null){
+			$dql = "SELECT v FROM BackendBundle:Video v WHERE v.title LIKE '%$search%' OR v.description LIKE '%$search%'  ORDER BY v.id DESC";
+		}else{
+			$dql = "SELECT v FROM BackendBundle:Video v ORDER BY v.id DESC";
+		}
+		$query = $em->createQuery($dql);
+
+		//Recogemos el numero de la request para la paginación
+		$page = $request->query->getInt("page", 1);
+		$paginator = $this->get("knp_paginator");
+		$items_per_page = 6;
+
+		$pagination = $paginator->paginate($query, $page, $items_per_page);
+		$total_items_count = $pagination->getTotalItemCount();
+
+		$data = array(
+			"status" => "success",
+			"total_items_count" => $total_items_count,
+			"page_actual"	=> $page,
+			"items_per_page" => $items_per_page,
+			"total_pages" => ceil($total_items_count / $items_per_page),
+			"data" => $pagination
+		);
+
+		return $helpers->json($data);
+	}
+	
 
 }
