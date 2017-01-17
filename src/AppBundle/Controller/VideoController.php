@@ -121,7 +121,7 @@ class VideoController extends Controller{
 	 *
 	 */
 	
-	public function newAction(Request $request){
+	public function editAction(Request $request, $id = null){
 		
 		$helpers = $this->get("app.helpers");
 
@@ -139,6 +139,8 @@ class VideoController extends Controller{
 
 				$params = json_decode($json);
 
+				$video_id = $id;
+
 				$createdAt = new \Datetime('now');
 				$updatedAt = new \Datetime('now');
 				$image = null;
@@ -153,44 +155,42 @@ class VideoController extends Controller{
 					//Cargamos el entity manager
 					$em = $this->getDoctrine()->getManager();
 
-					$user = $em->getRepository("BackendBundle:User")->findOneBy(
-						array(
-							"id" => $user_id
-						));
-
-					//Setemos los datos del video obteniendo el objeto del usuario quien creo el video
-					$video = new Video();
-					$video->setUser($user);
-					$video->setTitle($title);
-					$video->setDescription($description);
-					$video->setStatus($status);
-					$video->setCreatedAt($createdAt);
-					$video->setUpdatedAt($updatedAt);
-
-					//Persistimos los datos en doctrine
-					$em->persist($video);
-					//Guardamos los datos en la BD
-					$em->flush();
-
+					//Buscamos el video para editar
 					$video = $em->getRepository("BackendBundle:Video")->findOneBy(
-							array(
-								"user" 		=> $user,
-								"title" 	=> $title,
-								"status" 	=> $status,
-								"createdAt" => $createdAt
-							));
+						array(
+							"id" => $video_id
+						));
+					
+					if (isset($identity->sub) && $identity->sub == $video->getUser()->getId()) {	
+						$video->setTitle($title);
+						$video->setDescription($description);
+						$video->setStatus($status);
+						$video->setUpdatedAt($updatedAt);
 
-					$data = array(
-						"status" => "success", 
-						"code" => 200, 
-						"data" => $video
-					);
+						//Persistimos los datos en doctrine
+						$em->persist($video);
+						//Guardamos los datos en la BD
+						$em->flush();
 
+
+					
+						$data = array(
+							"status" => "success", 
+							"code" => 200, 
+							"data" => "Video updated success!! " 
+						);
+					}else{
+						$data = array(
+							"status" => "error", 
+							"code" => 400, 
+							"data" => "Video updated  error, you not owner!!" 
+						);
+					}
 				}else{
 					$data = array(
 						"status" => "error", 
 						"code" => 400, 
-						"msg" => "Video not created"
+						"msg" => "Video not updated"
 					);
 				}
 
@@ -198,7 +198,7 @@ class VideoController extends Controller{
 				$data = array(
 					"status" => "error", 
 					"code" => 400, 
-					"msg" => "Video not created, params failed"
+					"msg" => "Video not updated, params failed"
 				);
 			}
 			
