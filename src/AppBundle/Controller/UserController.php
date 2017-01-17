@@ -264,4 +264,54 @@ class UserController extends Controller{
 
 	}
 
+
+	/**
+	 *
+	 * Método para listar todos los videos
+	 *
+	 */
+	public function channelAction(Request $request, $id = null){
+
+		$helpers = $this->get("app.helpers");
+
+		$em = $this->getDoctrine()->getManager();
+		//Buscamos el id en la tabla de usuario
+		$user = $em->getRepository("BackendBundle:User")->findOneBy(array(
+			"id" => $id
+		));
+
+		$dql = "SELECT v FROM BackendBundle:Video v WHERE v.user = $id ORDER BY v.id DESC";
+		$query = $em->createQuery($dql);
+
+		//Recogemos el numero de la request para la paginación
+		$page = $request->query->getInt("page", 1);
+		$paginator = $this->get("knp_paginator");
+		$items_per_page = 6;
+
+		$pagination = $paginator->paginate($query, $page, $items_per_page);
+		$total_items_count = $pagination->getTotalItemCount();
+
+		if (count($user) == 1) {
+			$data = array(
+				"status" => "success",
+				"total_items_count" => $total_items_count,
+				"page_actual"	=> $page,
+				"items_per_page" => $items_per_page,
+				"total_pages" => ceil($total_items_count / $items_per_page),
+			);	
+
+			$data["data"]["videos"] = $pagination;
+			$data["data"]["user"] 	= $user; 
+		}else{
+			$data = array(
+				"status" => "error",
+				"code" => 400,
+				"msg" => "User dont exists"
+			);
+		}
+		
+
+		return $helpers->json($data);
+	}
+
 }

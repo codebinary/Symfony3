@@ -443,6 +443,6 @@ class VideoController extends Controller{
 
 		return $helpers->json($data);
 	}
-	
+
 
 }
